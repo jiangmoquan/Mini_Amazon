@@ -12,14 +12,14 @@ from google.protobuf.internal.decoder import _DecodeVarint32
 from google.protobuf.internal.encoder import _EncodeVarint
 
 
-WORLD_ID = 1011
+WORLD_ID = 1012
 WORLD_IP = "vcm-2464.vm.duke.edu"
 WORLD_PORT = 23456
 
 UPS_IP = "vcm-2464.vm.duke.edu"
 UPS_PORT = 23333
 
-SIM_SPEED = 99999
+SIM_SPEED = 999
 
 LISTEN_PORT = 10000
 LISTEN_IP = "localhost"
@@ -286,6 +286,7 @@ class UPSHandler(socketserver.BaseRequestHandler):
         self.world_sock = world_sock
 
     def handle(self):
+        print("Accept UPS, Handle this command.... ")
 
         ups_commands = get_message(self.request, AmazonUPS_pb2.Ucommands)
 
@@ -444,6 +445,9 @@ def handleWorld(worldsock):
             print("finish handle the world, close connection...")
             worldsock.close()
 
+
+
+###############################  Handle the Web #############################################
 
 
 def requestTrackingNum(package_id):
