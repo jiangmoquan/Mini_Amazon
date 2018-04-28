@@ -8,18 +8,19 @@ import tutorial_pb2
 import AmazonUPS_pb2
 import AmazonWorld_pb2
 import socketserver
+#from communicate import get_message, send_message
 from google.protobuf.internal.decoder import _DecodeVarint32
-from google.protobuf.internal.encoder import _EncodeVarint
+from google.protobuf.internal.encoder import _VarintEncoder
 
 
-WORLD_ID = 1012
+WORLD_ID = 1018
 WORLD_IP = "vcm-2464.vm.duke.edu"
 WORLD_PORT = 23456
 
 UPS_IP = "vcm-2464.vm.duke.edu"
 UPS_PORT = 23333
 
-SIM_SPEED = 999
+SIM_SPEED = 999999
 
 LISTEN_PORT = 10000
 LISTEN_IP = "localhost"
@@ -30,13 +31,10 @@ LISTEN_IP = "localhost"
 conn = psycopg2.connect(host="vcm-2464.vm.duke.edu",database="postgres", user="postgres", port= "5433")
 
 
-
+"""
 
 def socket_read_n(sock, n):
-    """ Read exactly n bytes from the socket.
-        Raise RuntimeError if the connection closed before
-        n bytes were read.
-    """
+
     buf = ''
     while n > 0:
         data = sock.recv(n)
@@ -48,8 +46,7 @@ def socket_read_n(sock, n):
 
 
 def get_message(sock, msgtype):
-    """ Read a message from a socket. msgtype is a subclass of
-        of protobuf Message.
+
     
     len_buf = socket_read_n(sock, 4)
 
@@ -67,8 +64,14 @@ def get_message(sock, msgtype):
     msg = msgtype()
     msg.ParseFromString(real_msg)
     return msg
-    """
-    recvmsg = sock.recv(4096)
+    
+
+
+
+
+
+    len_buf = socket_read_n(sock, 4)
+    recvmsg = sock.recv(1024)
     (length, pos) = _DecodeVarint32(recvmsg, 0)
 
     msg = msgtype()
@@ -79,13 +82,8 @@ def get_message(sock, msgtype):
 
 
 
-
-
 def send_message(sock, message):
-    """ Send a serialized message (protobuf Message interface)
-        to a socket, prepended by its length packed in 4
-        bytes (big endian).
-    """
+
     print("sending:", message)
 
     s = message.SerializeToString()
@@ -94,6 +92,67 @@ def send_message(sock, message):
 
     #packed_len = struct.pack('>L', len(s))
     sock.sendall(s)
+
+
+"""
+# encode the data to be sent to the "world"
+def encode_varint(value):
+    """ Encode an int as a protobuf varint """
+    data = []
+    _VarintEncoder()(data.append, value, None)
+    return b''.join(data)
+
+
+# decode the data received from the "world"
+def decode_varint(data):
+    """ Decode a protobuf varint to an int """
+    return _DecodeVarint32(data, 0)[0]
+
+
+# send protocol buffer messages over TCP
+def send_message(conn, msg):
+    """ Send a message, prefixed with its size, to a TPC/IP socket """
+
+    print("sending:", msg)
+
+    data = msg.SerializeToString()
+    size = encode_varint(len(data))
+    conn.sendall(size + data)
+
+
+
+# receive and parse message sent from the "world"
+def get_message(conn, msg_type):
+    """ Receive a message, prefixed with its size, from a TCP/IP socket """
+    # Receive the size of the message data
+    data = b''
+    while True:
+        try:
+            data += conn.recv(1)
+            size = decode_varint(data)
+            break
+        except IndexError:
+            pass
+    # Receive the message data
+    data = conn.recv(size)
+    # Decode the message
+    msg = msg_type()
+    msg.ParseFromString(data)
+
+    print ("getting:", msg)
+    return msg
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 def sendandrecvUPS(command_msg):
