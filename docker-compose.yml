@@ -24,3 +24,22 @@ services:
          - ./nginx/config:/etc/nginx/conf.d
      depends_on:
          - web
+
+  backend:
+      build: ./server_python
+      command: "python3 server.py"
+      volumes:
+        - ./server_python:/code2
+      ports:
+        - "9999:9999"
+      depends_on:
+        - web
+      environment:
+        - WORLDHOST=vcm-903.vm.duke.edu
+        - WORLDPORT=12345
+        - WORLDID = 1000
+        - UPSPORT=23333
+        - UPSHOST=vcm-2743.vm.duke.edu
+        - LISTENPORT=9999
+        - LOCAL_HOST=vcm-903.vm.duke.edu
+        - SIM_SPEED=99999999
