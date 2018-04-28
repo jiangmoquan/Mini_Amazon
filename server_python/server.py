@@ -13,7 +13,7 @@ from google.protobuf.internal.decoder import _DecodeVarint32
 from google.protobuf.internal.encoder import _VarintEncoder
 
 
-WORLD_ID = 1024
+WORLD_ID = 1029
 WORLD_IP = "vcm-2464.vm.duke.edu"
 WORLD_PORT = 23456
 
@@ -28,7 +28,7 @@ LISTEN_IP = "0.0.0.0"
 #MAX_CONNECTION = 100
 #RECEIVE_BYTES = 4
 
-conn = psycopg2.connect(host="localhost",database="storedb", user="postgres", port= "5432")
+conn = psycopg2.connect(host="vcm-2464.vm.duke.edu",database="postgres", user="postgres", port= "5433")
 
 global_world_sock = 0
 """
@@ -277,8 +277,7 @@ def letTruckGo(truckid, whid):
 
         for row in rows:
             cur.execute("UPDATE order_order SET status = 'S'  WHERE  tracking_num = %s;", (row[0], ))
-            tracking = loaded.package_id.add()
-            tracking = row[0]
+            loaded.package_id.append(row[0])
 
         cur.execute("DELETE FROM order_truck WHERE wh_id_id = %s AND truck_id = %s;", (whid, truckid, ))
 
@@ -286,7 +285,7 @@ def letTruckGo(truckid, whid):
         cur.close()
 
         command_msg = AmazonUPS_pb2.Acommands()
-        command_msg.packages_loaded = loaded
+        command_msg.packages_loaded.CopyFrom(loaded)
 
         response_msg = sendandrecvUPS(command_msg) 
         
@@ -352,7 +351,7 @@ class UPSHandler(socketserver.BaseRequestHandler):
             success, error = handleTruckArrived(global_world_sock, ups_commands.truck_arrival)
 
         if ups_commands.HasField('package_deliver'):
-            success, error = handleTruckArrived(ups_commands.package_deliver)
+            success, error = handlePackageDelivered(ups_commands.package_deliver)
 
 
         response = AmazonUPS_pb2.Aacknowledge()
@@ -462,7 +461,7 @@ def handlePacked(world_sock, tracking_num):
 def handleLoaded(tracking_num):
     #try:
         cur = conn.cursor()
-        cur.execute("SELECT wh_id_id, id, truck_id  FROM order_order WHERE tracking_num = %s;", (tracking_num, ))
+        cur.execute("SELECT wh_id_id, id, truck_id  FROM order_order WHERE tracking_num = %s ORDER BY id DESC;", (tracking_num, ))
         row = cur.fetchone()
 	
         print("in handleloaded:", row)
