@@ -13,7 +13,7 @@ from google.protobuf.internal.decoder import _DecodeVarint32
 from google.protobuf.internal.encoder import _VarintEncoder
 
 
-WORLD_ID = 1029
+WORLD_ID = 1034
 WORLD_IP = "vcm-2464.vm.duke.edu"
 WORLD_PORT = 23456
 
@@ -330,7 +330,7 @@ def handlePackageDelivered(Upackage_deliver):
         package_id = Upackage_deliver.package_id
     #try:
         cur = conn.cursor()
-        cur.execute("UPDATE order_order SET status = 'E'  WHERE  id = %s;", (package_id, ))
+        cur.execute("UPDATE order_order SET status = 'E'  WHERE  tracking_num = %s;", (package_id, ))
 
         conn.commit()
         cur.close()
