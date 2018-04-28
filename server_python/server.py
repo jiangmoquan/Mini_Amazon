@@ -12,7 +12,7 @@ from google.protobuf.internal.decoder import _DecodeVarint32
 from google.protobuf.internal.encoder import _EncodeVarint
 
 
-WORLD_ID = 1010
+WORLD_ID = 1011
 WORLD_IP = "vcm-2464.vm.duke.edu"
 WORLD_PORT = 23456
 
