@@ -28,7 +28,7 @@ LISTEN_IP = "0.0.0.0"
 #MAX_CONNECTION = 100
 #RECEIVE_BYTES = 4
 
-conn = psycopg2.connect(host="vcm-2464.vm.duke.edu",database="storedb", user="postgres", port= "5432")
+conn = psycopg2.connect(host="localhost",database="storedb", user="postgres", port= "5432")
 
 global_world_sock = 0
 """
