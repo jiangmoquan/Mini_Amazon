@@ -120,7 +120,7 @@ class CurrentView(_LoginRequiredOrderListView):
 
     def get_queryset(self):
         return super().get_queryset().filter(owner=self.request.user,
-                                             status__in=['P', 'S', 'H'])
+                                             status__in=['P', 'S', 'H','K','T','L','D','S','E'])
 
 
 class PastView(_LoginRequiredOrderListView):

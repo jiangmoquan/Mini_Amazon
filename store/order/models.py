@@ -47,7 +47,7 @@ class Order(models.Model):
         ('S', 'Shipping'),
         ('E', 'Delivered'),
         ('R', 'Received'),
-        ('H', 'Hold'),
+        ('H', 'Wait for Buying'),
         ('C', 'Cancelled')
     )
     owner = models.ForeignKey(User)
