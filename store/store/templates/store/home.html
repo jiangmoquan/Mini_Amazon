@@ -1,0 +1,68 @@
+{% extends "store/front-base.html" %}
+{% load staticfiles %}
+{% block title %}Home - ISI Store{% endblock %}
+
+{% block head %}
+  <style>
+    html {
+      background: white url('{% static "fan.jpg"%}') no-repeat center center;
+      background-size:cover;
+      min-height: 100%;
+    }
+
+    body { background: none; }
+
+    .marketing-column {
+      padding: 1em 2em;
+      border-radius: 6px;
+      background: rgba(220, 220, 220, 0.8);
+    }
+
+    footer { display: none; }
+    .footer, .footer a { color: rgba(255, 255, 255, 0.4); }
+    p.admin a { color: rgba(255, 255, 255, 0.6); }
+
+  </style>
+{% endblock %}
+
+{% block main %}
+<div class="jumbotron text-center">
+  <h2>CMFQ Clothes store</h2>
+  <p class="lead">At CMFQ store, we have the best clothes for chenfan</p>
+
+  <p><a class="btn btn-lg btn-success" role="button"
+        href="{% url 'category:index' %}">Chenfan's clothes</a></p>
+</div>
+
+<div class="row marketing">
+  <div class="col-lg-6">
+    <div class="marketing-column">
+      <h4>Beautiful</h4>
+      <p>I am beautiful</p>
+      <h4>Fashion</h4>
+      <p>I am fashion</p>
+      <h4>Colorful</h4>
+      <p>Too much clolors.</p>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="marketing-column">
+      <h4>Expensive</h4>
+      <p>All the products are expensive. Everyone thinks you are rich if you wear my clothes</p>
+      <h4>Quality</h4>
+      <p>We use the most expensive cloth</p>
+      <h4>Two day free shipping over $10000</h4>
+      <p>You can receie your clothes in two days!</p>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <p class="pull-right">Cover photo via
+    <a href="https://unsplash.com/jonasnilssonlee">Jonas Nilsson Lee</a>
+    / CC0
+  </p>
+  <p class="pull-left admin">
+    <a href="{% url 'admin:overview' %}" title="Vendor Admin Console">Vendor Console</a></p>
+</div>
+{% endblock %}

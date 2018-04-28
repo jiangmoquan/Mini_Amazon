@@ -1,0 +1,68 @@
+{% load staticfiles %}
+{% load bootstrap3 %}
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ title }}{% endblock %}</title>
+
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+  
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}">
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <link rel="stylesheet" href="{% static 'common.css' %}">
+  {# TODO: Consider move jQuery to the bottom of page. #}
+  <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+
+  <!--[if lt IE 12]>
+    <script src="{% static 'ie-patch.js' %}"></script>
+  <![endif]-->
+  {% block head %}
+    {# Some additional per-page styles. #}
+  {% endblock %}
+</head>
+<body>
+  <div id="top-messages">
+    <div id="remote-messages">
+      {% bootstrap_messages %}
+    </div>
+    <!-- TODO: add a break line here -->
+    <div id="local-messages">
+      <div class="alert alert-dismissable template">
+        <button class="close" aria-hidden="true" data-dismiss="alert" type="button">×</button>
+      </div>
+    </div>
+  </div>
+
+  {% block body %}
+    {# Including main body with navigation bar and sidebar (if necessary). #}
+  {% endblock %}
+
+  <!-- Bootstrap -->
+  <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
+
+  <!-- jQuery.cookies: getting CSRF token -->
+  <script src="{% static 'jquery.cookie/jquery.cookie.js' %}"></script>
+
+  <script src="{% static 'common.js' %}"></script>
+
+  {% block footer %}
+    {# Some additional per-page scripts. #}
+  {% endblock %}
+</body>
+</html>

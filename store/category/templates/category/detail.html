@@ -1,0 +1,13 @@
+{% extends "store/front-base.html" %}
+{% block title %}{{ category }} - Category{% endblock %}
+
+{% block main %}
+
+  <h1 class="page-header">{{ category }}
+    <small>All products</small>
+  </h1>
+  <p>{{ category.description }}</p>
+
+  {% include 'category/product_list.html' with list_item='category/product_list_item.html' %}
+
+{% endblock %}

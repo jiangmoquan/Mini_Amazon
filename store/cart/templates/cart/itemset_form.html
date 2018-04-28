@@ -1,0 +1,157 @@
+<form id="cart" method="GET" action="{% url 'order:create' %}">
+  <input type="hidden" name="hash" id="cart-hash" value="{{ cart_hash }}">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Unit Price</th>
+        <th>Quantity</th>
+        <th>Total Price</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for item in items %}
+      {# TODO: show out-of-stock and off-shelf information. #}
+      <tr class="cart-item
+                {% if not item.in_stock %}out-of-stock{% endif %}
+                {% if item.off_shelf %}off-shelf{% endif %}"
+          data-id="{{ product.instance.pk }}"
+          data-url="{% url 'cart_api:item' item.product.pk %}"
+          data-price="{{ item.price }}" >
+        <td><a href="{% url 'product:detail' item.product.pk %}"
+            title="{{ item.name }} - Product Detail">{{ item.name }}</a></td>
+        <td><span class="value">${{ item.price }}</span></td>
+        <td class="item-quantity"><input type="number" value="{{ item.quantity }}"
+                                         min="1" step="1" autocomplete="off"></td>
+        <td class="item-total-price">$<span class="value">{{ item.total_price }}</span></td>
+        <td>
+          <a class="action-delete" href="#"><span class="glyphicon glyphicon-trash"></span>
+            Delete
+          </a>
+          <a class="action-restore" href="#"><span class="glyphicon glyphicon-repeat"></span>
+            Restore
+          </a>
+          {% if item.off_shelf %}
+            <span class="label label-danger" rel="tooltip" data-toggle="tooltip"
+                data-placement="right" data-original-title="Please delete it before checkout">Off shelf</span>
+          {% elif not item.in_stock %}<span class="label label-warning">Out of stock</span>{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</form>
+<p class="cart-total">Total amount: <span class="total-price">${{ cart.total_price }}</span></p>
+
+<script>
+  // TODO: considering move scripts to a standalone file.
+  var $cart = $('#cart');
+
+  // Re-calculate and update the display of total price.
+  function updateTotalPrice() {
+    var totalPrice = 0;
+    $('.cart-item').not('.deleted')
+        .find('.item-total-price').children('.value').each(function () {
+          var price = parseFloat($(this).text());
+          if (price > 0)
+            totalPrice += price;
+    });
+    $('span.total-price').text('$'+ totalPrice.toFixed(2));
+  }
+
+  // Changing quantity.
+  $cart.find('.item-quantity').children('input').each(function () {
+    $(this).change(function () {
+      var $item = $(this).parents('.cart-item');
+      var quantity = this.value;
+      var price = $item.data('price');
+      var url = $item.data('url');
+
+      // Re-calculate sub-total price.
+      var subTotalPrice = quantity * price;
+      if (subTotalPrice >= 0) {
+        $item.find('.item-total-price').children('.value').text(subTotalPrice.toFixed(2));
+      } else {
+        $item.find('.item-total-price').children('.value').text(" --");
+      }
+
+      updateTotalPrice();
+
+      // Submit new quantity in several seconds.
+      // Avoid submit too frequently when user click continuously.
+      var timeout = $item.data('timeout');
+      if (timeout != undefined) {
+        clearTimeout(timeout);
+      }
+      timeout = setTimeout(function () {
+        $item.removeData('timeout');
+        $.ajax({
+          url:  url,
+          type: 'PUT',
+          data: {'quantity': quantity}
+        }).done(function (data) {
+          $('#cart-hash').val(data.cartHash);
+        });
+      }, 800);
+      $item.data('timeout', timeout);
+    });
+  });
+
+  // Deleting item.
+  $cart.find('a.action-delete').click(function (event) {
+    event.preventDefault();
+    var $item = $(this).parents('.cart-item');
+    var url = $item.data('url');
+
+    $item.addClass('deleted')
+         .find('input').attr('disabled', '');
+    updateTotalPrice();
+
+    $.ajax({
+      url: url,
+      type: 'DELETE'
+    }).done(function (data) {
+      $('#cart-hash').val(data.cartHash);
+    });
+
+  });
+
+  // Restoring item.
+  $cart.find('a.action-restore').click(function (event) {
+    event.preventDefault();
+    var $item = $(this).parents('.cart-item');
+    var url = $item.data('url');
+    var quantity = $item.find('.item-quantity').find('input').val();
+
+    $item.removeClass('deleted')
+         .find('input').removeAttr('disabled');
+    updateTotalPrice();
+
+    $.ajax({
+      url: url,
+      type: 'PUT',
+      data: {'quantity': quantity}
+    }).done(function (data) {
+      $('#cart-hash').val(data.cartHash);
+    });
+  });
+
+  // Check before submit form (checkout).
+  $('form#cart').submit(function () {
+    if ($('.cart-item.off-shelf:not(.deleted)').length > 0) {
+      addMessage('danger', "Cannot checkout. Some of items are off-shelf in your shopping cart. " +
+          "Please remove them, and try again.");
+      return false;
+    }
+  });
+
+  // Active tooltips.
+  // Reference:
+  // http://stackoverflow.com/questions/9446318/bootstrap-tooltips-not-working
+  $(function () {
+    $("[rel='tooltip']").tooltip();
+  });
+
+  // TODO: Fix quantity inconsistent after page back by user.
+</script>

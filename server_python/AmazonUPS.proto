@@ -1,0 +1,80 @@
+syntax = "proto2";
+
+package AmazonUPSProto;
+
+
+message Arequest_package_id{
+  required int32 wh_id = 1;
+  optional int64 ups_user_id = 2;
+  required int32 x = 3;
+  required int32 y = 4;
+  repeated Item items = 5;
+}
+
+message Arequest_truck {
+  required int32 wh_id = 1;
+  required int32 x = 2;
+  required int32 y = 3;
+}
+
+
+message Apackages_loaded {
+  required int32 truck_id = 1;
+  required int32 wh_id = 2;
+  repeated int64 package_id = 3;
+}
+
+
+message Aacknowledge {
+  required bool success = 1;
+  optional string error = 2;
+}
+
+
+message Utruck_arrival {
+  required int32 truck_id = 1;
+  required int32 wh_id = 2;
+}
+
+message Upackage_deliver {
+  required int64 package_id = 1;
+}
+
+
+message Uresponse_package_id{
+  required int64 package_id = 1;
+  optional string error = 2;
+}
+
+message Uacknowledge {
+  required bool success = 1;
+  optional string error = 2;
+}
+
+message Item{
+required int64 item_id = 1;
+required string description = 2;
+required int32 amount = 3;
+}
+
+message Acommands{
+	optional Arequest_package_id request_package_id = 1;
+	optional Arequest_truck request_truck = 2;
+	optional Apackages_loaded packages_loaded = 3;
+}
+
+message Uresponses{
+	optional Uresponse_package_id response_package_id = 1;
+	optional Uacknowledge acknowledge = 2;
+}
+
+message Ucommands{
+	optional Utruck_arrival truck_arrival = 1;
+	optional Upackage_deliver package_deliver = 2;
+}
+
+message Aresponses{
+	optional Aacknowledge acknowledge = 1;
+}
+
+

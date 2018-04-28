@@ -1,0 +1,21 @@
+{% extends "store/front-base.html" %}
+{% load bootstrap3 %}
+{% block title %}Shopping Cart{% endblock %}
+
+{% block main %}
+
+  <h1 class="page-header">Shopping Cart</h1>
+
+  {% if items|length == 0 %}
+    <p>Empty</p>
+    <p><a href="{% url 'category:index' %}">Go shopping</a></p>
+  {% else %}
+    {% include 'cart/itemset_form.html' with items=items %}
+
+    {% buttons %}
+      <button type="submit" form="cart" class="btn btn-lg btn-primary pull-right">Checkout</button>
+    {% endbuttons %}
+  {% endif %}
+
+
+{% endblock %}

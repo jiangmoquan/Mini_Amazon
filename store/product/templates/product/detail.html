@@ -1,0 +1,199 @@
+{% extends "store/front-base.html" %}
+{% load thumbnail %}
+
+{% block title %}{{ product }} - Product{% endblock %}
+
+{% block main %}
+
+  <h1 class="page-header">{{ product.name }}
+    <small>{{ product.category }}
+      <a class="category-link" title="View all {{ product.category }}"
+         href="{% url 'category:detail' product.category.id %}">
+        <span class="glyphicon glyphicon-th-list"></span>
+      </a>
+    </small>
+  </h1>
+
+  <div class="row">
+
+    {% if product.photo_set.exists %}
+    <div class="col-md-5 col-lg-4">
+      <div id="carousel-thumbnail" class="carousel slide" data-ride="carousel">
+        <!-- Indicators -->
+        <ol class="carousel-indicators">
+          {% for photo in product.photo_set.all %}
+          <li data-target="#carousel-thumbnail" data-slide-to="{{ forloop.counter0 }}"
+              {% if forloop.first %}class="active"{% endif %}></li>
+          {% endfor %}
+        </ol>
+
+        <!-- Wrapper for slides -->
+        <div class="carousel-inner" role="listbox">
+          {% for photo in product.photo_set.all %}
+          <div class="item{% if forloop.first %} active{% endif %}">
+            {% thumbnail photo.image "384x256" crop="center" as im %}
+            <a href="{{ photo.image.url }}" title="Click for large picture">
+              {# TODO: Open large picture in a user friendly way. #}
+              <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"
+                  alt="Thumbnail image {{ forloop.counter }}" title="{{ photo.description }}">
+            </a>
+            {% endthumbnail %}
+            <div class="carousel-caption">
+              {{ photo.description }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <!-- Controls -->
+        <a class="left carousel-control" href="#carousel-thumbnail" role="button" data-slide="prev">
+          <span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+        <a class="right carousel-control" href="#carousel-thumbnail" role="button" data-slide="next">
+          <span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span>
+          <span class="sr-only">Next</span>
+        </a>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="col-md-7 col-lg-8">
+      <div class="showcase">
+        <p><span class="item-name">Price:</span>
+          <span class="price">${{ product.price|floatformat:2 }}</span></p>
+
+        <p><span class="item-name">Status:</span>
+        {% if product.in_stock %}
+          <span class="in-stock">In stock</span>
+        {% else %}
+          <span class="out-of-stock">Out of stock</span>
+        {% endif %}
+        </p>
+
+        <p><span class="item-name">Rating:</span>
+          {% if product.average_rating %}
+            <span class="rating point-{{ product.average_rating|floatformat:0 }}">{{ product.get_average_rating_display }}</span>
+            <small>({{ product.average_rating|floatformat }} out of 5 points,
+              by {{ product.rating_set.count }} customers)</small>
+          {% else %}
+            <small>(no data)</small>
+          {% endif  %}
+        </p>
+
+        <p class="pull-right">
+          {% if rating_form %}
+            <button class="btn btn-default btn-lg" data-toggle="modal" data-target="#modal-rating">
+              <span class="glyphicon glyphicon-star"></span>
+              Rating
+            </button>
+          {% endif %}
+          {% if user.is_authenticated %}
+          <button class="btn btn-primary btn-lg buy"
+            data-link="{% url 'cart_api:item' product.id %}"><span class="glyphicon glyphicon-shopping-cart"></span>
+          Add to Cart</button>
+          {% else %}
+          <a class="btn btn-primary btn-lg" role="button"
+            href="{% url 'account:login' %}?next={{ request.path }}"><span class="glyphicon glyphicon-shopping-cart"></span>
+          Add to Cart</a>
+          {% endif %}
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-5 col-lg-4">
+      <h3>Properties</h3>
+      <table class="table table-striped">
+        <tbody>
+          {% if product.Product_num %}
+          <tr>
+            <td>Product number</td>
+            <td>{{ product.Product_num }}</td>
+          </tr>
+          {% endif %}
+          {% if product.Material %}
+          <tr>
+            <td>Material</td>
+            <td>{{ product.Material }}</td>
+          </tr>
+          {% endif %}
+          <tr>
+            <td>Style</td>
+            <td>{{ product.Style }} </td>
+          </tr>
+          <tr>
+            <td>Shoulder</td>
+            <td>{{ product.Shoulder }} cm</td>
+          </tr>
+          <tr>
+            <td>Waist</td>
+            <td>{{ product.Waist }} cm</td>
+          </tr>
+          {% if product.Chest%}
+          <tr>
+            <td> Chest</td>
+            <td>{{ product.Chest }} cm</td>
+          </tr>
+          {% endif %}
+          {% if product.Fashion_element %}
+          <tr>
+            <td>Fashion element</td>
+            <td>{{ product.Fashion_element }}</td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="col-md-7 col-lg-8">
+      <h3>Description</h3>
+      {% if product.description %}
+        <p>{{ product.description }}</p>
+      {% else %}
+        <p>No description for this product.</p>
+      {% endif %}
+    </div>
+
+  </div>
+
+  {% if rating_form %}
+  <div class="modal fade" id="modal-rating" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="ratingModalLabel">Rating</h4>
+        </div>
+        <div class="modal-body">
+          <p>Please select your feel to this product.</p>
+
+          <form id="rating" method="POST" action=".">{% csrf_token %}
+            {{ rating_form.point }}
+          </form>
+            Your rating may be shown to other customers anonymously and you can change it future.</p>
+
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary" form="rating">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+  // Hacking to add stars in rating form.
+  var $star = $('<span>').addClass('glyphicon').addClass('glyphicon-star');
+  $('#id_point').find('label').each(function (index) {
+    var $stars = $('<div>').addClass('stars');
+    for (var i=0; i<index+1; ++i) {
+      $star.clone().appendTo($stars);
+    }
+    $(this).append($stars);
+  });
+  </script>
+  {% endif %}
+
+{% endblock %}

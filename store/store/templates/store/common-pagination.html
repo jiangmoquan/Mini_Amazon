@@ -1,0 +1,36 @@
+{% load args_string %}
+<nav>
+  <ul class="pagination">
+  {% if list.has_previous %}
+    <li class="previous">
+      <a aria-label="Previous" href="{% args_string %}">
+        <span aria-hidden="true">&laquo;</span>
+      </a>
+    </li>
+  {% else %}
+    <li class="previous disabled"><a aria-label="Previous" href="#">
+      <span aria-hidden="true">&laquo;</span>
+    </a></li>
+  {% endif %}
+
+  {% for page, current in list.neighbor_pages %}
+    {% if not current %}
+      <li><a href="{% args_string %}">{{ page }}</a></li>
+    {% else %}
+      <li class="active"><a href="#"><span class="sr-only">(current)</span>{{ page }}</a></li>
+    {% endif %}
+  {% endfor %}
+
+  {% if list.has_next %}
+    <li class="next">
+      <a aria-label="Next" href="{% args_string %}">
+        <span aria-hidden="true">&raquo;</span>
+      </a>
+    </li>
+  {% else %}
+    <li class="next disabled"><a aria-label="Previous" href="#">
+      <span aria-hidden="true">&raquo;</span>
+    </a></li>
+  {% endif %}
+  </ul>
+</nav>

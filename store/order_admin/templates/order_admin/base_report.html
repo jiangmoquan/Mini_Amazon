@@ -1,0 +1,66 @@
+{% extends "admin/admin-base.html" %}
+{% load staticfiles %}
+{% block title %}{{ title }} - Admin{% endblock %}
+
+{% block main %}
+  <h1 class="page-header">{{ title }}</h1>
+
+  <div class="row">
+    <div class="col-md-12">
+      <form class="form-inline" name="filter" method="GET" action=".">
+        <div class="form-group {{ start_has_error }}">
+          <label for="filter-start">From</label>
+          <input type="text" name="start" class="date-start form-control"
+                 placeholder="YYYY/mm/dd" value="{{ start }}">
+        </div>
+        <div class="form-group {{ end_has_error }}">
+          <label for="filter-end">to</label>
+          <input type="text" name="end" class="date-end form-control"
+                 placeholder="YYYY/mm/dd" value="{{ end }}">
+        </div>
+        <input type="hidden" value="{{ page }}" name="page">
+
+        <button class="btn btn-default" type="submit">Filter</button>
+        {% if start or end %}
+          <button id="filter-reset" class="btn btn-default">Clear</button>
+        {% endif %}
+      </form>
+      <script>
+        $(document).ready(function () {
+          $('#filter-reset').click(function () {
+            $('.date-start').val('');
+            $('.date-end').val('');
+            $('form[name="filter]').submit();
+          });
+        });
+      </script>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            {% block thead %}{% endblock %}
+          </tr>
+        </thead>
+        <tbody>
+          {% block tbody %}{% endblock %}
+        </tbody>
+      </table>
+
+      {% include 'store/common-pagination.html' with list=orders %}
+    </div>
+  </div>
+
+    <script src="{% static 'bootstrap-datepicker/js/bootstrap-datepicker.js' %}"></script>
+    <script>
+    $('.form-inline').find('input').datepicker({
+        format: 'yyyy-mm-dd',
+        autoclose: 'true',
+        place: 'bottom-left'
+    })
+    </script>
+
+{% endblock %}

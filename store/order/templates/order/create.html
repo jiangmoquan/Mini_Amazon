@@ -1,0 +1,37 @@
+{% extends "store/front-base.html" %}
+{% load bootstrap3 %}
+{% block title %}New Order{% endblock %}
+
+{% block main %}
+  <h1>Checkout</h1>
+
+  <div class="row">
+    <div class="col-md-12">
+      <h2>Order Detail</h2>
+
+      {% include 'order/item-list.html' with items=cart.item_set.all %}
+
+      <p>Total price: ${{ cart.total_price }}</p>
+
+      <p><a href="{% url 'cart:index' %}"
+       title="Shopping Cart">Back to shopping cart</a>
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-md-8 col-lg-5 col-sm-12">
+      <h2>Shipping Information</h2>
+
+      <form name="order" method="post"
+            action="{% url 'order:create' %}?hash={{ cart_hash }}">
+        {% csrf_token %}
+        {% bootstrap_form order_form %}
+
+        {% buttons %}
+          <button type="submit" class="btn btn-primary">Checkout</button>
+        {% endbuttons  %}
+      </form>
+      </div>
+  </div>
+
+{% endblock %}

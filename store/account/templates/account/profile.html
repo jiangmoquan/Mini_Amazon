@@ -1,0 +1,37 @@
+{% extends "store/front-base.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block main %}
+  <h1 class="page-header">My Profile
+    <small>Welcome, {{ user }}.</small>
+  </h1>
+
+  <div class="row" id="user-profile">
+    <div class="col-md-6">
+      <p><span class="item-name">First name:</span>{{ user.first_name }}</p>
+      <p><span class="item-name">Last name:</span>{{ user.last_name }}</p>
+      <p><span class="item-name">Last Login:</span>{{ user.last_login }}</p>
+      <p><span class="item-name">Join Date:</span>{{ user.date_joined }}</p>
+    </div>
+    <div class="col-md-6">
+      <p><span class="item-name">Email:</span>{{ user.email }}</p>
+      <p><span class="item-name">Address:</span>{{ user.profile.address }}</p>
+      {% if user.profile.address_2 %}
+        <p><span class="item-name">Address 2:</span>{{ user.profile.address_2 }}</p>
+	{% endif %}
+	<p><span class="item-name">UPS num:</span>{{ user.profile.ups_num }}</p>
+      <p><span class="item-name">Postcode:</span>{% firstof user.profile.postcode "n/a" %}</p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <a role="button" class="btn btn-default"
+         href="{% url 'account:profile_change' %}">Update profile</a>
+      <a role="button" class="btn btn-default btn-margin"
+         href="{% url 'account:password_change' %}">Change password</a>
+    </div>
+
+  </div>
+
+{% endblock %}

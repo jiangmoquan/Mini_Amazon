@@ -1,0 +1,13 @@
+{% extends "store/front-base.html" %}
+{% block title %}{{ title }}{% endblock %}
+
+{% block main %}
+  <h1 class="page-header">{{ title }}</h1>
+
+  <div class="row">
+    <div class="col-md-12">
+      {% include 'order/order_list.html' with list_item='order/order_list_item.html' %}
+    </div>
+  </div>
+
+{% endblock %}
