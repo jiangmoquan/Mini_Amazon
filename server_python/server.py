@@ -13,7 +13,7 @@ from google.protobuf.internal.decoder import _DecodeVarint32
 from google.protobuf.internal.encoder import _VarintEncoder
 
 
-WORLD_ID = 1019
+WORLD_ID = 1024
 WORLD_IP = "vcm-2464.vm.duke.edu"
 WORLD_PORT = 23456
 
@@ -30,7 +30,7 @@ LISTEN_IP = "0.0.0.0"
 
 conn = psycopg2.connect(host="vcm-2464.vm.duke.edu",database="postgres", user="postgres", port= "5433")
 
-
+global_world_sock = 0
 """
 
 def socket_read_n(sock, n):
@@ -265,6 +265,7 @@ def toLoad(world_sock, package_id, truck_id):
 
 
 def letTruckGo(truckid, whid):
+        print("lettruckgo: truckid:", truckid)
         loaded = AmazonUPS_pb2.Apackages_loaded()
         loaded.truck_id = truckid
         loaded.wh_id = whid
@@ -313,7 +314,7 @@ def handleTruckArrived(world_sock, Utruck_arrival):
         cur.execute("SELECT id  FROM order_order WHERE status = 'T' AND wh_id_id = %s;", ( wh_id, ))
         rows = cur.fetchall()
         for row in rows:
-            toload(world_sock, row[0], truck_id)
+            toLoad(world_sock, row[0], truck_id)
 
 
         conn.commit()
@@ -341,8 +342,6 @@ def handlePackageDelivered(Upackage_deliver):
 
 
 class UPSHandler(socketserver.BaseRequestHandler):
-    def __init__(self, world_sock):
-        self.world_sock = world_sock
 
     def handle(self):
         print("Accept UPS, Handle this command.... ")
@@ -350,7 +349,7 @@ class UPSHandler(socketserver.BaseRequestHandler):
         ups_commands = get_message(self.request, AmazonUPS_pb2.Ucommands)
 
         if ups_commands.HasField('truck_arrival'):
-            success, error = handleTruckArrived(world_sock, ups_commands.truck_arrival)
+            success, error = handleTruckArrived(global_world_sock, ups_commands.truck_arrival)
 
         if ups_commands.HasField('package_deliver'):
             success, error = handleTruckArrived(ups_commands.package_deliver)
@@ -371,7 +370,7 @@ def handleUPS(worldsock):
     HOST, PORT = LISTEN_IP, LISTEN_PORT
 
     # Create the server, binding to localhost on port
-    server = socketserver.TCPServer((HOST, PORT), UPSHandler(worldsock))
+    server = socketserver.TCPServer((HOST, PORT), UPSHandler)
 
     # Activate the server; this will keep running until you
     # interrupt the program with Ctrl-C
@@ -447,10 +446,10 @@ def handlePacked(world_sock, tracking_num):
 
         cur.execute("UPDATE order_order SET status = 'T'  WHERE  tracking_num = %s;", (tracking_num, ))
 
-        cur.execute("SELECT * FROM order_truck WHERE wh_id_id = %s;", (whnum, ))
+        cur.execute("SELECT truck_id FROM order_truck WHERE wh_id_id = %s;", (whnum, ))
         hastruck = cur.fetchone()
         if hastruck is not None:
-            toload(world_sock, package_id)
+            toLoad(world_sock, package_id, hastruck[0])
 
         conn.commit()
         cur.close()
@@ -465,7 +464,8 @@ def handleLoaded(tracking_num):
         cur = conn.cursor()
         cur.execute("SELECT wh_id_id, id, truck_id  FROM order_order WHERE tracking_num = %s;", (tracking_num, ))
         row = cur.fetchone()
-
+	
+        print("in handleloaded:", row)
         whnum = row[0]
         package_id = row[1]
         truckid = row[2]
@@ -627,7 +627,7 @@ def init():
 
     cur = conn.cursor()
     cur.execute("INSERT INTO order_warehouse (location_x, location_y)  VALUES (500, 500);")
-    cur.execute("INSERT INTO order_warehouse (location_x, location_y) VALUES (0, 0);")
+    cur.execute("INSERT INTO order_warehouse (location_x, location_y) VALUES (100,100);")
     conn.commit()
 
     cur.execute("SELECT id FROM order_warehouse;")
@@ -656,8 +656,8 @@ def init():
     warehouse.y = int(500)
     
     warehouse = connect_mag.initwh.add()
-    warehouse.x = int(0)
-    warehouse.y = int(0)
+    warehouse.x = int(100)
+    warehouse.y = int(100)
 
     print(connect_mag)
     send_message(world_sock_fd, connect_mag)
@@ -666,7 +666,8 @@ def init():
 
     print(connected.error )
     print ("received ")
-
+    
+    global_world_sock = world_sock_fd
     return world_sock_fd
 
 
