@@ -12,11 +12,11 @@ from google.protobuf.internal.decoder import _DecodeVarint32
 from google.protobuf.internal.encoder import _VarintEncoder
 
 
-WORLD_ID = 1000
-WORLD_IP = "vcm-903.vm.duke.edu"
+WORLD_ID = 1035
+WORLD_IP = "vcm-2464.vm.duke.edu"
 WORLD_PORT = 23456
 
-UPS_IP = "vcm-903.vm.duke.edu"
+UPS_IP = "vcm-2464.vm.duke.edu"
 UPS_PORT = 23333
 
 SIM_SPEED = 99999
