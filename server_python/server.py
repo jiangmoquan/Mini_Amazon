@@ -12,20 +12,20 @@ from google.protobuf.internal.decoder import _DecodeVarint32
 from google.protobuf.internal.encoder import _EncodeVarint
 
 
-
+WORLD_ID = 1006
 WORLD_IP = "vcm-2464.vm.duke.edu"
 WORLD_PORT = 23456
 
-UPS_IP = "localhost"
-UPS_PORT = 20000
+UPS_IP = "vcm-2464.vm.duke.edu"
+UPS_PORT = 23333
 
 SIM_SPEED = 5
 
 LISTEN_PORT = 10000
 LISTEN_IP = "localhost"
 
-MAX_CONNECTION = 100
-RECEIVE_BYTES = 4
+#MAX_CONNECTION = 100
+#RECEIVE_BYTES = 4
 
 conn = psycopg2.connect(host="localhost",database="postgres", user="postgres", port= "5433")
 
@@ -99,7 +99,7 @@ def sendandrecvUPS(command_msg):
 
     send_message(ups_sock, command_msg)
 
-    response_msg = get_message(ups_sock, AmazonWorld_pb2.Uresponses)  
+    response_msg = get_message(ups_sock, AmazonUPS_pb2.Uresponses)  
         
     ups_sock.close() 
 
@@ -121,7 +121,7 @@ def toBuy(world_sock,package_id):
         rows = cur.fetchall()                                                                                                                                                                               
         for row in rows:                                                                                                                                                                                    
             cur.execute("SELECT description FROM product_product WHERE id = %s;", (row[0], ))
-            des = fetchone()                                                                                                                                                                                
+            des = cur.fetchone()                                                                                                                                                                                
 
             item = buying.things.add()                                                                                                                                                               
             item.id = row[0]
@@ -535,7 +535,7 @@ def handleWeb(worldsock):
             cur = conn.cursor()
             cur.execute("SELECT id FROM order_order WHERE status = 'P';")
             rows = cur.fetchall()
-            print(rows)
+            #print(rows)
             for row in rows:
                 print("there is a new order! Start processing")
 
@@ -582,7 +582,7 @@ def init():
 
 
     connect_mag = AmazonWorld_pb2.AConnect()
-    connect_mag.worldid = 111112
+    connect_mag.worldid = WORLD_ID
     print("worldid len :", len(connect_mag.SerializeToString()))
     warehouse = connect_mag.initwh.add()
     warehouse.x = int(500)
