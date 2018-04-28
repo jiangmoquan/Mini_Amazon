@@ -80,7 +80,7 @@ DATABASES = {
         #'ENGINE': 'django.db.backends.postgresql_psycopg2',
         #'NAME': 'miniAmazon',
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
+        'NAME': 'storedb',
         'USER': 'postgres',
         'HOST': 'db',
         'PORT': 5432,
