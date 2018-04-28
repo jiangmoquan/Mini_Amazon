@@ -120,7 +120,7 @@ class Order(models.Model):
 
     def confirm(self):
         """Confirm a shipped order. Used by customer."""
-        self._change_status_atomically('S', 'R')
+        self._change_status_atomically('KTLDES', 'R')
         self.close_date = timezone.now()
         self.save()
 
