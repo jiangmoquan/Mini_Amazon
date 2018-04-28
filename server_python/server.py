@@ -8,7 +8,6 @@ import tutorial_pb2
 import AmazonUPS_pb2
 import AmazonWorld_pb2
 import socketserver
-#from communicate import get_message, send_message
 from google.protobuf.internal.decoder import _DecodeVarint32
 from google.protobuf.internal.encoder import _VarintEncoder
 
@@ -25,76 +24,11 @@ SIM_SPEED = 99999
 LISTEN_PORT = 9999
 LISTEN_IP = "0.0.0.0"
 
-#MAX_CONNECTION = 100
-#RECEIVE_BYTES = 4
-
 conn = psycopg2.connect(host="vcm-2464.vm.duke.edu",database="postgres", user="postgres", port= "5433")
 
 global_world_sock = 0
-"""
-
-def socket_read_n(sock, n):
-
-    buf = ''
-    while n > 0:
-        data = sock.recv(n)
-        if data == b'':
-            raise RuntimeError('unexpected connection close')
-        buf += data.decode(sys.stdout.encoding)
-        n -= len(data)
-    return buf
 
 
-def get_message(sock, msgtype):
-
-    
-    len_buf = socket_read_n(sock, 4)
-
-    (length, pos) = _DecodeVarint32(len_buf, 0)
-
-    msg_buf = socket_read_n(sock, length - (4-pos))
-
-    new_msg = len_buf + msg_buf
-
-    real_msg = new_msg[pos:pos+length]
-
-    #msg_len = struct.unpack('>L', len_buf.encode())[0]
-    #msg_buf = socket_read_n(sock, msg_len)
-
-    msg = msgtype()
-    msg.ParseFromString(real_msg)
-    return msg
-    
-
-
-
-
-
-    len_buf = socket_read_n(sock, 4)
-    recvmsg = sock.recv(1024)
-    (length, pos) = _DecodeVarint32(recvmsg, 0)
-
-    msg = msgtype()
-    msg.ParseFromString(recvmsg[pos:pos+length])
-
-    print("getting:", msg)
-    return msg
-
-
-
-def send_message(sock, message):
-
-    print("sending:", message)
-
-    s = message.SerializeToString()
-    #print("before pack, the len is ", len(s))
-    _EncodeVarint(sock.sendall, len(s), None)
-
-    #packed_len = struct.pack('>L', len(s))
-    sock.sendall(s)
-
-
-"""
 # encode the data to be sent to the "world"
 def encode_varint(value):
     """ Encode an int as a protobuf varint """
@@ -120,7 +54,6 @@ def send_message(conn, msg):
     conn.sendall(size + data)
 
 
-
 # receive and parse message sent from the "world"
 def get_message(conn, msg_type):
     """ Receive a message, prefixed with its size, from a TCP/IP socket """
@@ -143,18 +76,6 @@ def get_message(conn, msg_type):
     return msg
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 def sendandrecvUPS(command_msg):
     ups_sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)      #定义socket类型，网络通信，TCP
     ups_sock.connect((UPS_IP, UPS_PORT))
@@ -169,10 +90,10 @@ def sendandrecvUPS(command_msg):
 
 
 def toBuy(world_sock,package_id):
-        command_msg = AmazonWorld_pb2.ACommands()
-        command_msg.simspeed = SIM_SPEED
-        buying = command_msg.buy.add()
-    #try:
+    command_msg = AmazonWorld_pb2.ACommands()
+    command_msg.simspeed = SIM_SPEED
+    buying = command_msg.buy.add()
+    try:
         cur = conn.cursor()                                                                                                                                                                                 
         cur.execute("SELECT wh_id_id FROM order_order WHERE id = %s;", (package_id, ))                                                                                                                      
         row = cur.fetchone()                                                                                                                                                                                
@@ -196,18 +117,18 @@ def toBuy(world_sock,package_id):
         conn.commit()                                                                                                                                                                                    
         cur.close()
 
-    #except (Exception, psycopg2.DatabaseError) as error:
-        #print(error)
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
 
 
 
 
 def toPack(world_sock, package_id):
-        command_msg = AmazonWorld_pb2.ACommands()
-        command_msg.simspeed = SIM_SPEED
-        pack = command_msg.topack.add()
+    command_msg = AmazonWorld_pb2.ACommands()
+    command_msg.simspeed = SIM_SPEED
+    pack = command_msg.topack.add()
 
-    #try:
+    try:
         cur = conn.cursor()
         cur.execute("SELECT wh_id_id, tracking_num FROM order_order WHERE id = %s;", (package_id, ))
         row = cur.fetchone()
@@ -236,16 +157,16 @@ def toPack(world_sock, package_id):
         cur.execute("UPDATE order_order SET status = 'K' WHERE id = %s;", (package_id, ))
         conn.commit()
         cur.close()
-    #except (Exception, psycopg2.DatabaseError) as error:
-        #print(error)
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
 
 
 def toLoad(world_sock, package_id, truck_id):
-        command_msg = AmazonWorld_pb2.ACommands()
-        command_msg.simspeed = SIM_SPEED
-        loading = command_msg.load.add()
+    command_msg = AmazonWorld_pb2.ACommands()
+    command_msg.simspeed = SIM_SPEED
+    loading = command_msg.load.add()
     
-    #try:
+    try:
         cur = conn.cursor()
         cur.execute("SELECT wh_id_id, tracking_num FROM order_order WHERE id = %s;", (package_id, ))
         row = cur.fetchone()
@@ -259,18 +180,18 @@ def toLoad(world_sock, package_id, truck_id):
         send_message(world_sock, command_msg)     
         conn.commit()
         cur.close()
-    #except (Exception, psycopg2.DatabaseError) as error:
-        #print(error)
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
                                 
 
 
 def letTruckGo(truckid, whid):
-        print("lettruckgo: truckid:", truckid)
-        loaded = AmazonUPS_pb2.Apackages_loaded()
-        loaded.truck_id = truckid
-        loaded.wh_id = whid
+    print("lettruckgo: truckid:", truckid)
+    loaded = AmazonUPS_pb2.Apackages_loaded()
+    loaded.truck_id = truckid
+    loaded.wh_id = whid
 
-    #try:
+    try:
         cur = conn.cursor()
         cur.execute("SELECT tracking_num FROM order_order WHERE wh_id_id = %s AND truck_id = %s AND status = 'D';", (whid, truckid, ))
         rows = cur.fetchall()
@@ -294,8 +215,8 @@ def letTruckGo(truckid, whid):
         if response_acknowledge.error != "":
             print(response_acknowledge.error) 
 
-    #except (Exception, psycopg2.DatabaseError) as error:
-        #print(error)    
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)    
 
 
 
@@ -303,9 +224,9 @@ def letTruckGo(truckid, whid):
 ###############################  Handle the UPS #############################################
 
 def handleTruckArrived(world_sock, Utruck_arrival):
-        truck_id = Utruck_arrival.truck_id
-        wh_id = Utruck_arrival.wh_id
-    #try:
+    truck_id = Utruck_arrival.truck_id
+    wh_id = Utruck_arrival.wh_id
+    try:
         cur = conn.cursor()
         cur.execute("INSERT INTO order_truck (truck_id, wh_id_id) VALUES (%s, %s);", (truck_id, wh_id, ))
 
@@ -321,21 +242,21 @@ def handleTruckArrived(world_sock, Utruck_arrival):
 
         return 1, ""
 
-    #except (Exception, psycopg2.DatabaseError) as error:
-        #print(error)
-        #return 0, error
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        return 0, error
 
 
 def handlePackageDelivered(Upackage_deliver):
-        package_id = Upackage_deliver.package_id
-    #try:
+    package_id = Upackage_deliver.package_id
+    try:
         cur = conn.cursor()
         cur.execute("UPDATE order_order SET status = 'E'  WHERE  tracking_num = %s;", (package_id, ))
 
         conn.commit()
         cur.close()
         return 1, ""
-    #except (Exception, psycopg2.DatabaseError) as error:
+    except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         return 0, error
 
@@ -376,13 +297,9 @@ def handleUPS(worldsock):
     server.serve_forever()
 
 
-
-
-
-
 ###############################  Handle the World #############################################
 def checkAvalibility(package_id, wh_id):
-    #try:
+    try:
         cur = conn.cursor()
         
         cur.execute("SELECT product_id, quantity  FROM order_orderitem WHERE order_id = %s;", (package_id, ))
@@ -398,12 +315,12 @@ def checkAvalibility(package_id, wh_id):
         cur.close()
         return True
 
-    #except (Exception, psycopg2.DatabaseError) as error:
-        #print(error)   
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)   
 
 
 def handlePurchased(world_sock, purchase):
-    #try:
+    try:
         cur = conn.cursor()
 
         whid = purchase.whnum
@@ -428,14 +345,14 @@ def handlePurchased(world_sock, purchase):
 
         conn.commit()
         cur2.close()
-    #except (Exception, psycopg2.DatabaseError) as error:
-        #print(error)
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
 
 
 
 
 def handlePacked(world_sock, tracking_num):
-    #try:
+    try:
         cur = conn.cursor()
         cur.execute("SELECT wh_id_id, id  FROM order_order WHERE tracking_num = %s;", (tracking_num, ))
         row = cur.fetchone()
@@ -452,14 +369,14 @@ def handlePacked(world_sock, tracking_num):
 
         conn.commit()
         cur.close()
-    #except (Exception, psycopg2.DatabaseError) as error:
-        #print(error)
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
 
 
 
 
 def handleLoaded(tracking_num):
-    #try:
+    try:
         cur = conn.cursor()
         cur.execute("SELECT wh_id_id, id, truck_id  FROM order_order WHERE tracking_num = %s ORDER BY id DESC;", (tracking_num, ))
         row = cur.fetchone()
@@ -478,8 +395,8 @@ def handleLoaded(tracking_num):
 
         conn.commit()
         cur.close()
-    #except (Exception, psycopg2.DatabaseError) as error:
-        #print(error)
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
 
 
 
